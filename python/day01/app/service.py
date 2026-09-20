@@ -1,6 +1,6 @@
-from python.day01.app.exceptions import InvalidTitleError
-from python.day01.app.models import Document
-from python.day01.app.schemas import DocumentCreate
+from .exceptions import InvalidTitleError
+from .models import Document
+from .schemas import DocumentCreate
 
 
 def create_document(payload: DocumentCreate) -> Document:

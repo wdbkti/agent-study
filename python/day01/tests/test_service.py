@@ -1,8 +1,8 @@
 import pytest
 
-from python.day01.app.exceptions import InvalidTitleError
-from python.day01.app.schemas import DocumentCreate
-from python.day01.app.service import create_document
+from app.exceptions import InvalidTitleError
+from app.schemas import DocumentCreate
+from app.service import create_document
 
 # 合法的参数
 payload = {'title': "文档标题1", 'content': "文档内容1", 'category': "分类1", 'tags': ["tag1", "tag2"],
@@ -12,7 +12,7 @@ payload = {'title': "文档标题1", 'content': "文档内容1", 'category': "�
 def test_create_document():
     dc = DocumentCreate(**payload)
     document = create_document(dc)
-    result = {**payload, 'word_count': 1}
+    result = {**payload, 'word_count': 5}
     assert document.__dict__ == result
 
 

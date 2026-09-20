@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from python.day01.app.schemas import DocumentCreate
+from app.schemas import DocumentCreate
 
 payload = {'title': "文档标题1", 'content': "文档内容1", 'category': "分类1", 'tags': ["tag1", "tag2"],
            'source': "renrendoc"}
