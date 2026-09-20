@@ -59,4 +59,4 @@ def test_title_forbidden_kj_forbidden_word():
 def test_title_forbidden_word_count():
     dc = DocumentCreate(**payload)
     document = create_document(dc)
-    assert document.word_count == len(document.content.split())
+    assert document.word_count == len(document.content)

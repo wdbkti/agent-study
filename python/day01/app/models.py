@@ -10,5 +10,5 @@ class Document:
     source: str
     word_count: int = field(init=False)
 
-    def __post_init__(self):
-        self.word_count = len(self.content.split())
+    def __post_init__(self) -> None:
+        self.word_count = len(self.content)
