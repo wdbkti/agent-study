@@ -4,4 +4,4 @@ class InvalidTitleError(ValueError):
         self.title = title
         self.reason = reason
         self.forbidden_word = forbidden_word
-        super().__init__(reason)
+        super().__init__(f"{reason}，标题“{title}”存在违禁词：{forbidden_word}")

@@ -40,11 +40,17 @@ def test_tags_1():
     assert dc.model_dump() == new_payload
 
 
-def test_tags_short_boundary():
-    with pytest.raises(ValidationError) as exc_info:
-        new_payload = {**payload, 'tags': []}
-        DocumentCreate(**new_payload)
-    assert "type=too_short" in str(exc_info.value)
+def test_tags_0():
+    new_payload = {**payload, 'tags': []}
+    dc = DocumentCreate(**new_payload)
+    assert dc.model_dump() == new_payload
+
+def test_tags_miss():
+    new_payload = {**payload}
+    new_payload2 = {**payload, 'tags': []}
+    del new_payload['tags']
+    dc = DocumentCreate(**new_payload)
+    assert dc.model_dump() == new_payload2
 
 
 def test_tags_long_boundary():

@@ -17,7 +17,7 @@
 
 ## 项目结构
 app/
-> init.py、models.py、schemas.py、exceptions.py、service.py
+> __init__.py、models.py、schemas.py、exceptions.py、service.py
 
 tests/
 > test_schemas.py、test_service.py
@@ -45,7 +45,7 @@ Service：
 - 进入day01项目目录：`cd python/day01`
 - 安装并同步项目依赖：
   - `uv sync`
-  - `uv`会根据`pyproject.toml`和`uv.lock`安装工在此所需依赖。
+  - `uv`会根据`pyproject.toml`和`uv.lock`安装项目所需依赖。
 - 如果本机尚未安装`uv`，需要先安装`uv`，再执行上述命令。
 
 ## 测试
@@ -64,6 +64,6 @@ Service：
   - word_count计算
 
 ## 已知限制
-- 当前 word_count 按单个字符切分(不区分中英文)，统计的总字数
+- Day 1 中 word_count 暂定义为 len(content)，即 Python 字符串字符数量；不进行中文分词，也不区分标点和空白。正式文库项目后续重新定义统计规则。
 
 ## Day 1 复盘

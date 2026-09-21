@@ -9,3 +9,6 @@ wheels/
 # Virtual environments
 .venv
 .idea/
+python/*/.ipynb_checkpoints/
+python/*/app/.ipynb_checkpoints/
+python/*/tests/.ipynb_checkpoints/
