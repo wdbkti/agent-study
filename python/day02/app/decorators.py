@@ -33,7 +33,7 @@ def use_time(fn):
         r = fn(*args, **kwargs)
         end = time.perf_counter()
         logger.info("结束执行")
-        logger.info("执行耗时%.4fs", start - end)
+        logger.info("执行耗时%.4fs", end - start)
         return r
 
     return wrapper

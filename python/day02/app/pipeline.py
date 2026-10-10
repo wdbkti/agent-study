@@ -6,7 +6,16 @@ from typing import Callable
 from app.decorators import call_log, use_time, call_count
 from app.chunker import iter_document_chunks
 
-ChunkRule = Callable[[DocumentChunk], bool]
+
+@dataclass(kw_only=True)
+class ProcessChunkResult:
+    index: int
+    passed: bool = True
+    rule_name: str = ""
+    reason: str = ""
+
+
+ChunkRule = Callable[[DocumentChunk], ProcessChunkResult]
 
 
 def min_length_rule(length: int) -> ChunkRule:
@@ -21,13 +30,15 @@ def min_length_rule(length: int) -> ChunkRule:
         False 表示不通过。
     """
 
-    def rule(chunk: DocumentChunk) -> bool:
+    def rule(chunk: DocumentChunk) -> ProcessChunkResult:
+        result = ProcessChunkResult(index=chunk.index)
         if chunk.char_count >= length:
-            return True
-        rule.reason = f"长度小于：{length}"
-        return False
+            return result
+        result.rule_name = "min_length_rule"
+        result.reason = f"长度小于：{length}"
+        result.passed = False
+        return result
 
-    rule.rule_name = "min_length_rule"
     return rule
 
 
@@ -43,23 +54,17 @@ def risk_keyword_rule(keywords: list[str]) -> ChunkRule:
         False 表示不通过(命中关键词)。
     """
 
-    def rule(chunk: DocumentChunk) -> bool:
+    def rule(chunk: DocumentChunk) -> ProcessChunkResult:
+        result = ProcessChunkResult(index=chunk.index)
         for keyword in keywords:
             if keyword in chunk.content:
-                rule.reason = f"存在风险关键词：{keyword}"
-                return False
-        return True
+                result.rule_name = "risk_keyword_rule"
+                result.reason = f"存在风险关键词：{keyword}"
+                result.passed = False
+                return result
+        return result
 
-    rule.rule_name = "risk_keyword_rule"
     return rule
-
-
-@dataclass(kw_only=True)
-class ProcessChunkResult:
-    index: int
-    passed: bool = True
-    rule_name: str = ""
-    reason: str = ""
 
 
 @use_time
@@ -69,8 +74,7 @@ def process_chunks(chunks: Iterable[DocumentChunk], rules: list[ChunkRule]) -> I
     for chunk in chunks:
         result = ProcessChunkResult(index=chunk.index)
         for rule in rules:
-            if not rule(chunk):
-                result.passed = False
-                result.rule_name = rule.rule_name
-                result.reason = rule.reason
+            result = rule(chunk)
+            if not result.passed:
+                break
         yield result

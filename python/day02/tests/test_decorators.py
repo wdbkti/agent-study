@@ -18,3 +18,10 @@ def test_process_chunks_decorator(content, chunk_size, risk_keywords):
     )
     assert isinstance(iter_result, Iterable)
     assert process_chunks.__name__ == 'process_chunks'
+
+    result = list(iter_result)
+    assert len(result) > 0
+
+    for chunk_index,chunk in enumerate(result):
+        assert isinstance(chunk, ProcessChunkResult)
+        assert chunk.index == chunk_index

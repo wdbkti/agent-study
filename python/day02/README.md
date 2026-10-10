@@ -23,7 +23,7 @@ app/
 
 tests/
 > conftest.py、test_chunker.py、test_decorators.py、test_pipeline.py
-> test_day01.py、test_fixture_study.py、test_parametrize.py
+> test_fixture_study.py、test_parametrize.py
 
 ## 数据流
 
@@ -40,7 +40,7 @@ DocumentChunk
 
 - 本项目使用`uv`管理 Python 环境和依赖
 - 版本建议使用Python 3.12+
-- 进入day01项目目录：`cd python/day02`
+- 进入day02项目目录：`cd python/day02`
 - 安装并同步项目依赖：
     - `uv sync`
     - `uv`会根据`pyproject.toml`和`uv.lock`安装项目所需依赖。

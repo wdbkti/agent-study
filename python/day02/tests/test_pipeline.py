@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 import pytest
 from app.pipeline import risk_keyword_rule, min_length_rule, ProcessChunkResult, process_chunks
 from app.models import DocumentChunk
@@ -17,7 +19,7 @@ def test_risk_keyword_rule(risk_keywords, document_chunk, risk_keyword, expected
     """有风险词，未通过"""
     document_chunk.content += risk_keyword
     r = risk_keyword_rule(risk_keywords)(document_chunk)
-    assert r == expected
+    assert r.passed == expected
 
 
 @pytest.mark.parametrize(
@@ -30,7 +32,7 @@ def test_risk_keyword_rule(risk_keywords, document_chunk, risk_keyword, expected
 def test_min_length_rule(document_chunk, min_length, expected):
     """最小长度"""
     r = min_length_rule(min_length)(document_chunk)
-    assert r == expected
+    assert r.passed == expected
 
 
 @pytest.fixture
@@ -92,3 +94,24 @@ def test_process_chunks_multi_rule(
     assert result.passed == passed
     assert result.rule_name == rule_name
     assert reason in result.reason
+
+
+def test_process_chunks_all_fail(chunk_size, risk_keywords):
+    """首个失败即停止检测"""
+    content = "这就是广告内容"
+    iter_result = process_chunks(
+        chunks=iter_document_chunks(content, chunk_size),
+        rules=[
+            min_length_rule(chunk_size),
+            risk_keyword_rule(risk_keywords)
+        ]
+    )
+
+    assert isinstance(iter_result, Iterable)
+
+    chunk = next(iter_result)
+    assert isinstance(chunk, ProcessChunkResult)
+    assert chunk.index == 0
+    assert chunk.passed is False
+    assert chunk.rule_name == "min_length_rule"
+    assert chunk.reason == "长度小于：10"
