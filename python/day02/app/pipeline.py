@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass, field
 from collections.abc import Iterable
 
@@ -25,18 +26,20 @@ def min_length_rule(length: int) -> ChunkRule:
         length: 最小字符数，必须为正整数
 
     Returns:
-        一个规则函数，接收 DocumentChunk，返回其内容长度是否 >= length。
-        True 表示通过。
-        False 表示不通过。
+        一个规则函数，接收 DocumentChunk，返回ProcessChunkResult。
     """
 
     def rule(chunk: DocumentChunk) -> ProcessChunkResult:
         result = ProcessChunkResult(index=chunk.index)
-        if chunk.char_count >= length:
+        if 0 < length <= chunk.char_count:
             return result
-        result.rule_name = "min_length_rule"
-        result.reason = f"长度小于：{length}"
+
         result.passed = False
+        result.rule_name = "min_length_rule"
+        if length <= 0:
+            result.reason = f"最小长度不能小于：{length}"
+        else:
+            result.reason = f"长度小于：{length}"
         return result
 
     return rule
@@ -49,9 +52,7 @@ def risk_keyword_rule(keywords: list[str]) -> ChunkRule:
         keywords: 风险关键词
 
     Returns:
-        一个规则函数，接收 DocumentChunk，返回其内容是否包含风险关键词。
-        True 表示通过(未命中关键词)。
-        False 表示不通过(命中关键词)。
+        一个规则函数，接收 DocumentChunk，返回ProcessChunkResult。
     """
 
     def rule(chunk: DocumentChunk) -> ProcessChunkResult:

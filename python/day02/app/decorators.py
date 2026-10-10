@@ -1,5 +1,6 @@
 import logging
 import time
+from collections.abc import Iterable
 from functools import wraps
 
 logging.basicConfig(
@@ -31,9 +32,17 @@ def use_time(fn):
         start = time.perf_counter()
         logger.info("开始执行")
         r = fn(*args, **kwargs)
-        end = time.perf_counter()
+        if isinstance(r, Iterable):
+            def counter_wrapper():
+                try:
+                    yield from r
+                finally:
+                    logger.info("结束执行")
+                    logger.info("执行耗时%.4fs", time.perf_counter() - start)
+
+            return counter_wrapper()
         logger.info("结束执行")
-        logger.info("执行耗时%.4fs", end - start)
+        logger.info("执行耗时%.4fs", time.perf_counter() - start)
         return r
 
     return wrapper
@@ -50,5 +59,3 @@ def call_log(fn):
         return r
 
     return wrapper
-
-

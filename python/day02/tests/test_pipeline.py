@@ -27,6 +27,8 @@ def test_risk_keyword_rule(risk_keywords, document_chunk, risk_keyword, expected
     [
         (5, True),
         (20, False),
+        (0, False),
+        (-1, False),
     ]
 )
 def test_min_length_rule(document_chunk, min_length, expected):

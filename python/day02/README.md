@@ -69,4 +69,14 @@ DocumentChunk
 
 - min_length_rule中计算长度方式为：len(content)
 
-## Day 1 复盘
+## Day 2 复盘
+- 看到邮件内容时，相对于Day 1，没有懵，已经基本上能看懂具体的内容了。
+- 本次的主要学习点（之前有基础，基本看一眼就能知道具体是学个什么东西）：
+  - Callable 函数也是对象，能当参数、返回值
+  - Decorator 装饰器，用于处理函数执行前/后做一些事情，但又会污染函数本身
+  - Generator / yield 惰性计算
+  - pytest fixture + parametrize 用于测试数据和重复case进一步工程化
+- 由于有之前的底子，本次考核内容还是相对较为容易的。
+- 测试case也将fixture 和 parametrize 完全利用起来子。
+- 当然小细节问题也不少，后续继续改进吧
+- 踩了个Decorator + Generator组成的坑，意外学到了yield from
