@@ -83,8 +83,7 @@ city
     - asyncio：会使用 run、sleep、gather，区分顺序等待与并发等待
     - HTTPX：会使用 AsyncClient、async with、状态码检查、JSON 和 timeout
     - 可替换的依赖：理解 Protocol 和 FakeTransport，让业务测试脱离真实网络
-    - 错误边界：把超时、连接失败、HTTP 失败、JSON 失败和字段错误区分清楚
-    - 异步测试：在 pytest 中真正 await，并延续 Day 02 的 fixture/parametrize
+    - 异步测试：在 pytest 中真正 await
 - 由于有之前的底子，本次考核内容还是相对较为容易的。
 - 本次实战是基于真实场景来，一开始还是会比较模糊，主要是各个知识点感觉都学会了，但当要将其揉合在一直子反倒有点不知道怎么下手了。
     - 先是按数据流，将各块功能实现，最后，再进行组装的
