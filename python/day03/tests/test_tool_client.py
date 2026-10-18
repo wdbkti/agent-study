@@ -24,18 +24,18 @@ def test_tool_result_failure():
 
 
 @pytest.mark.parametrize(
-    "payload",
+    "city, payload",
     [
-        {"city": "beijing", "temperature": 18},
-        {"city": "chengdu", "temperature": 26},
-        {"city": "heilongjiang", "temperature": -5},
-        {"city": "xinjiang", "temperature": 0},
+        ("beijing", {"temperature": 18}),
+        ("chengdu", {"temperature": 26}),
+        ("heilongjiang", {"temperature": -5}),
+        ("xinjiang", {"temperature": 0}),
     ]
 )
-def test_parse_weather_ok(payload):
-    tr = parse_weather(payload)
+def test_parse_weather_ok(city, payload):
+    tr = parse_weather(payload, city)
     assert tr.ok == True
-    assert tr.data == payload
+    assert tr.data == {**payload, "city": city}
     assert tr.error is None
     assert tr.message is None
 
@@ -44,17 +44,16 @@ def test_parse_weather_ok(payload):
     "payload, error,message",
     [
         ("", "invalid_payload", "响应不是 JSON 对象"),
-        ({"temperature": 18}, "invalid_payload", "缺少 city 字段"),
-        ({"city": "xinjiang"}, "invalid_payload", "缺少 temperature 字段"),
-        ({"city": "xinjiang", "temperature": ""}, "invalid_payload", "temperature 必须是数字"),
-        ({"city": "xinjiang", "temperature": True}, "invalid_payload", "temperature 必须是数字"),
-        ({"city": "xinjiang", "temperature": False}, "invalid_payload", "temperature 必须是数字"),
-        ({"city": "xinjiang", "temperature": {}}, "invalid_payload", "temperature 必须是数字"),
-        ({"city": "xinjiang", "temperature": []}, "invalid_payload", "temperature 必须是数字"),
+        ({}, "invalid_payload", "缺少 temperature 字段"),
+        ({"temperature": ""}, "invalid_payload", "temperature 必须是数字"),
+        ({"temperature": True}, "invalid_payload", "temperature 必须是数字"),
+        ({"temperature": False}, "invalid_payload", "temperature 必须是数字"),
+        ({"temperature": {}}, "invalid_payload", "temperature 必须是数字"),
+        ({"temperature": []}, "invalid_payload", "temperature 必须是数字"),
     ]
 )
 def test_parse_weather_exception(payload, error, message):
-    tr = parse_weather(payload)
+    tr = parse_weather(payload, "xinjiang")
     assert tr.ok == False
     assert tr.data is None
     assert tr.error == error

@@ -11,12 +11,12 @@ from app.transport import HttpxJsonTransport
 
 
 class FakeJsonTransport:
-    def __init__(self, payload: dict = None, exception: Exception = None) -> None:
+    def __init__(self, payload: object = None, exception: Exception = None) -> None:
         self.payload = payload
         self.exception = exception
         self.calls: list[tuple[str, float]] = []
 
-    async def get_json(self, url: str, *, timeout: float = 5.0) -> dict:
+    async def get_json(self, url: str, *, timeout: float = 5.0) -> object:
         self.calls.append((url, timeout))
         if self.exception is not None:
             raise self.exception
@@ -47,34 +47,39 @@ async def test_city_empty(tool_result_data, city):
 @pytest.mark.parametrize(
     "city,expected",
     [
-        ("Beijing", "beijing"),
-        (" SHANGHAI ", "shanghai"),
+        ("Beijing", "Beijing"),
+        (" SHANGHAI ", "SHANGHAI"),
         ("北京市", "%E5%8C%97%E4%BA%AC%E5%B8%82"),
-        ("A & B", "a+%26+b"),
+        ("A & B", "A+%26+B"),
     ]
 )
 async def test_city_normalize(city, expected):
-    fake = FakeJsonTransport({"city": city.strip().lower(), "temperature": 18})
+    fake = FakeJsonTransport({"temperature": 18})
     client = WeatherToolClient(transport=fake, timeout=5.0)
     result = await client.get_weather(city)
 
     assert isinstance(result, ToolResult)
     assert result.ok == True
-    assert result.data["city"] == city.strip().lower()
-    assert expected in fake.calls[0][0]
+    assert result.data["city"] == city.strip()
+
+    ori_url = fake.calls[0][0]
+    assert expected in ori_url
+
+    ori_url_obj = httpx.URL(ori_url)
+    assert ori_url_obj.params["city"] == city.strip()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "temperature,expected",
     [
-        (20, 20),
-        (0, 0),
+        (20, 20.0),
+        (0, 0.0),
         (-15.5, -15.5)
     ]
 )
 async def test_temperature(temperature, expected):
-    fake = FakeJsonTransport({"city": "beijing", "temperature": temperature})
+    fake = FakeJsonTransport({"temperature": temperature})
     client = WeatherToolClient(transport=fake, timeout=5.0)
     result = await client.get_weather("beijing")
 
@@ -85,12 +90,13 @@ async def test_temperature(temperature, expected):
 
 @pytest.mark.asyncio
 async def test_transport_call_once(tool_result_data):
+    timeout = 3.25
     fake = FakeJsonTransport(tool_result_data)
-    client = WeatherToolClient(transport=fake, timeout=5.0)
+    client = WeatherToolClient(transport=fake, timeout=timeout)
     result = await client.get_weather(city="beijing")
 
     assert len(fake.calls) == 1
-    assert fake.calls[0][1] == 5.0
+    assert fake.calls[0][1] == timeout
 
 
 @pytest.mark.asyncio
@@ -129,10 +135,10 @@ async def test_mock_transport_404(tool_result_data, http_code):
         return httpx.Response(http_code, json=tool_result_data)
 
     transport = httpx.MockTransport(handler)
-    httpx_client = httpx.AsyncClient(transport=transport)
-    httpx_json = HttpxJsonTransport(client=httpx_client)
-    client = WeatherToolClient(transport=httpx_json, timeout=5.0)
-    result = await client.get_weather(city="beijing")
+    async with httpx.AsyncClient(transport=transport) as httpx_client:
+        httpx_json = HttpxJsonTransport(client=httpx_client)
+        client = WeatherToolClient(transport=httpx_json, timeout=5.0)
+        result = await client.get_weather(city="beijing")
 
     assert result.ok is False
     assert result.data is None
@@ -148,10 +154,10 @@ async def test_mock_transport_200_invalid_json():
         return httpx.Response(200, headers={"content-type": "application/json"}, content=b'{"temperature": 18')
 
     transport = httpx.MockTransport(handler)
-    httpx_client = httpx.AsyncClient(transport=transport)
-    httpx_json = HttpxJsonTransport(client=httpx_client)
-    client = WeatherToolClient(transport=httpx_json, timeout=5.0)
-    result = await client.get_weather(city="beijing")
+    async with httpx.AsyncClient(transport=transport) as httpx_client:
+        httpx_json = HttpxJsonTransport(client=httpx_client)
+        client = WeatherToolClient(transport=httpx_json, timeout=5.0)
+        result = await client.get_weather(city="beijing")
 
     assert result.ok is False
     assert result.data is None
@@ -165,12 +171,12 @@ async def test_mock_transport_200_invalid_json():
     [
         (None, "响应不是 JSON 对象"),
         ([], "响应不是 JSON 对象"),
-        ({"city": "beijing"}, "缺少 temperature 字段"),
-        ({"city": "beijing", "temperature": "temperature"}, "temperature 必须是数字"),
-        ({"city": "beijing", "temperature": True}, "temperature 必须是数字"),
-        ({"city": "beijing", "temperature": float("nan")}, "temperature 必须是数字"),
-        ({"city": "beijing", "temperature": float("inf")}, "temperature 必须是数字"),
-        ({"city": "beijing", "temperature": float("-inf")}, "temperature 必须是数字"),
+        ({}, "缺少 temperature 字段"),
+        ({"temperature": "temperature"}, "temperature 必须是数字"),
+        ({"temperature": True}, "temperature 必须是数字"),
+        ({"temperature": float("nan")}, "temperature 必须是数字"),
+        ({"temperature": float("inf")}, "temperature 必须是数字"),
+        ({"temperature": float("-inf")}, "temperature 必须是数字"),
     ]
 )
 async def test_invalid_payload(payload, message):

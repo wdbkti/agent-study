@@ -7,12 +7,9 @@ from app.models import ToolResult
 from app.transport import JsonTransport
 
 
-def parse_weather(payload: dict) -> ToolResult:
+def parse_weather(payload: dict, city: str) -> ToolResult:
     if not isinstance(payload, dict):
         return ToolResult.failure("invalid_payload", "响应不是 JSON 对象")
-
-    if "city" not in payload:
-        return ToolResult.failure("invalid_payload", "缺少 city 字段")
 
     if "temperature" not in payload:
         return ToolResult.failure("invalid_payload", "缺少 temperature 字段")
@@ -21,7 +18,12 @@ def parse_weather(payload: dict) -> ToolResult:
     if isinstance(temperature, bool) or not isinstance(temperature, (int, float)) or not math.isfinite(temperature):
         return ToolResult.failure("invalid_payload", "temperature 必须是数字")
 
-    return ToolResult.success(payload)
+    return ToolResult.success(
+        {
+            "city": city,
+            "temperature": float(temperature),
+        }
+    )
 
 
 class WeatherToolClient:
@@ -37,9 +39,10 @@ class WeatherToolClient:
         self.timeout = timeout
 
     async def get_weather(self, city: str) -> ToolResult:
-        city = city.strip().lower()
+        city = city.strip()
         if not city:
             return ToolResult.failure("invalid_input", "无效的city")
+
 
         url = str(httpx.URL(self.base_url, params={"city": city}))
         try:
@@ -53,4 +56,4 @@ class WeatherToolClient:
         except json.JSONDecodeError as e:
             return ToolResult.failure("invalid_json", f"JSON 解析失败：{e}")
 
-        return parse_weather(payload)
+        return parse_weather(payload, city)

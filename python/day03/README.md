@@ -87,7 +87,7 @@ city
 - 由于有之前的底子，本次考核内容还是相对较为容易的。
 - 本次实战是基于真实场景来，一开始还是会比较模糊，主要是各个知识点感觉都学会了，但当要将其揉合在一直子反倒有点不知道怎么下手了。
     - 先是按数据流，将各块功能实现，最后，再进行组装的
-    - 测试的时候，才发现自己对于 FakeTransport 和 HttpxJsonTransport 其实还是模糊的，通过这里又加深了印象
+    - 测试的时候，才发现自己对于 FakeTransport 与 HTTPX MockTransport 其实还是模糊的，通过这里又加深了印象
         - 口试题也有提到，印象又更深了
         - FakeTransport 是属于业务层
-        - HttpxJsonTransport 是属于 httpx 的 transport，属于适配器层
+        - HTTPX MockTransport 是属于 httpx 的 transport，属于适配器层
