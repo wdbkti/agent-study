@@ -7,7 +7,7 @@ from app.models import ToolResult
 from app.transport import JsonTransport
 
 
-def parse_weather(payload: dict, city: str) -> ToolResult:
+def parse_weather(payload: object, city: str) -> ToolResult:
     if not isinstance(payload, dict):
         return ToolResult.failure("invalid_payload", "响应不是 JSON 对象")
 

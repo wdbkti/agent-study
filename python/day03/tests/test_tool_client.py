@@ -78,3 +78,21 @@ async def test_weather_timeout(timeout, message):
         client = WeatherToolClient(fake, timeout=timeout)
 
     assert message in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_extra_fields_ignored():
+    fake = FakeJsonTransport(
+        payload={
+            "city": "xinjiang",
+            "temperature": 22.5,
+            "humidity": 80,
+            "extra": {"nested": True},
+        }
+    )
+    client = WeatherToolClient(transport=fake)
+
+    result = await client.get_weather("Beijing")
+
+    assert result.ok is True
+    assert result.data == {"city": "Beijing", "temperature": 22.5}

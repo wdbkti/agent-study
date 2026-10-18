@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from app.tool_client import WeatherToolClient
-from httpx import ReadTimeout, ConnectError
+from httpx import ReadTimeout, ConnectError, HTTPStatusError
 
 from app.models import ToolResult
 from app.transport import HttpxJsonTransport
@@ -85,7 +85,7 @@ async def test_temperature(temperature, expected):
 
     assert result.ok is True
     assert result.data["temperature"] == expected
-    assert isinstance(result.data["temperature"], (int, float))
+    assert isinstance(result.data["temperature"], float)
 
 
 @pytest.mark.asyncio
@@ -121,6 +121,25 @@ async def test_connect_error():
     assert result.data is None
     assert result.error == "network_error"
     assert "网络错误" in result.message
+
+@pytest.mark.asyncio
+async def test_http_error(tool_result_data):
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/weather"
+        assert request.method == "GET"
+        return httpx.Response(404, json=tool_result_data)
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport) as client:
+        adapter = HttpxJsonTransport(client)
+        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+            await adapter.get_json(
+                "https://training.invalid/weather?city=beijing",
+                timeout=2.0,
+            )
+
+    assert exc_info.value.response.status_code == 404
+    assert "404" in str(exc_info.value)
 
 
 @pytest.mark.asyncio

@@ -71,6 +71,21 @@ city
     - timeout 配置为 0/负数/非有限数时构造失败；用 pytest.raises(ValueError)。
     - 每个失败结果都检查 ok=False、data=None、error 正确、message 非空；至少一处有意义的 fixture 和参数化。
     - 适配器请求路径与方法正确；客户端由调用方 async with 管理。选任意一个参数化 case 独立运行仍通过。
+- 离线测试
+  - 所有自动测试离线运行；
+  - 不依赖真实天气服务、API Key；
+
+## 错误码
+
+| 情况                                        | 固定 error          | 处理位置                             |
+|-------------------------------------------|-------------------|----------------------------------|
+| 空 city / 纯空白                              | `invalid_input`   | 请求前                              |
+| `httpx.TimeoutException`                  | `timeout`         | 业务异常边界，先于 `RequestError` 捕获      |
+| 其他 `httpx.RequestError`，例如 `ConnectError` | `network_error`   | 业务异常边界                           |
+| `httpx.HTTPStatusError`                   | `http_error`      | 适配器先 `raise_for_status`，再由业务转成结果 |
+| `json.JSONDecodeError`                    | `invalid_json`    | 解析失败转成结果                         |
+| 不是 dict / 缺字段 / temperature 非法            | `invalid_payload` | 解析成功后的业务校验                       |
+
 
 ## 已知限制
 
